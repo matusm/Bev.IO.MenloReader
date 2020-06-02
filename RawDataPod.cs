@@ -5,58 +5,33 @@ namespace Bev.IO.MenloReader
 {
     public class RawDataPod
     {
-        #region Fields (corresponding data file entries)
-        decimal logTime;
-        decimal counter0;
-        decimal counter1;
-        decimal counter2;
-        decimal counter3;
-        decimal counter4;
-        decimal counter5;
-        decimal counter6;
-        decimal counter7;
-        decimal auxData0;
-        decimal auxData1;
-        decimal? outputPower;
-        LockStatus? status;
-
-        bool parseError;
-        OutlierType outlierFxm0;
-        OutlierType outlierFxm1;
-        int dataColumns;
-        #endregion
-
         #region Properties
         // probably just a getter would be better
-        public decimal LogTime { get { return logTime; } set { logTime = value; } }
-        public decimal Counter0 { get { return counter0; } set { counter0 = value; } }
-        public decimal Counter1 { get { return counter1; } set { counter1 = value; } }
-        public decimal Counter2 { get { return counter2; } set { counter2 = value; } }
-        public decimal Counter3 { get { return counter3; } set { counter3 = value; } }
-        public decimal Counter4 { get { return counter4; } set { counter4 = value; } }
-        public decimal Counter5 { get { return counter5; } set { counter5 = value; } }
-        public decimal Counter6 { get { return counter6; } set { counter6 = value; } }
-        public decimal Counter7 { get { return counter7; } set { counter7 = value; } }
-        public decimal AuxData0 { get { return auxData0; } set { auxData0 = value; } }
-        public decimal AuxData1 { get { return auxData1; } set { auxData1 = value; } }
-        public bool ParseError { get { return parseError; } }
-        public OutlierType OutlierFxm0 { get { return outlierFxm0; } }
-        public OutlierType OutlierFxm1 { get { return outlierFxm1; } }
-        public decimal? OutputPower { get { return outputPower; } set { outputPower = value; } }
-        public LockStatus? Status { get { return status; } set { status = value; } }
+        public decimal LogTime { get; set; }
+        public decimal Counter0 { get; set; }
+        public decimal Counter1 { get; set; }
+        public decimal Counter2 { get; set; }
+        public decimal Counter3 { get; set; }
+        public decimal Counter4 { get; set; }
+        public decimal Counter5 { get; set; }
+        public decimal Counter6 { get; set; }
+        public decimal Counter7 { get; set; }
+        public decimal AuxData0 { get; set; }
+        public decimal AuxData1 { get; set; }
+        public bool ParseError { get; }
+        public OutlierType OutlierFxm0 { get; private set; }
+        public OutlierType OutlierFxm1 { get; private set; }
+        public decimal? OutputPower { get; set; }
+        public LockStatus? Status { get; set; }
         #endregion
 
         #region Ctor
-        public RawDataPod()
+        public RawDataPod(string str)
         {
-            // all values are 0 at this point
-            parseError = false;
-            outlierFxm0 = OutlierType.None;
-            outlierFxm1 = OutlierType.None;
-        }
-        public RawDataPod(string str) : this()
-        {
-            parseError = !ParseLine(str);
+            ParseError = false;
+            OutlierFxm0 = OutlierType.None;
+            OutlierFxm1 = OutlierType.None;
+            ParseError = !ParseLine(str);
         }
         #endregion
 
@@ -75,17 +50,17 @@ namespace Bev.IO.MenloReader
             OutlierType outlierFxmTemp = OutlierType.None;
             if (filter.FxmCounter == FxmNumber.Fxm0)
             {
-                fsyn = counter0;
-                foff = counter1;
-                fbeat1 = counter2;
-                fbeat2 = counter3;
+                fsyn = Counter0;
+                foff = Counter1;
+                fbeat1 = Counter2;
+                fbeat2 = Counter3;
             }
             if (filter.FxmCounter == FxmNumber.Fxm1)
             {
-                fsyn = counter4;
-                foff = counter5;
-                fbeat1 = counter6;
-                fbeat2 = counter7;
+                fsyn = Counter4;
+                foff = Counter5;
+                fbeat1 = Counter6;
+                fbeat2 = Counter7;
             }
 
             // check rep-rate
@@ -103,58 +78,96 @@ namespace Bev.IO.MenloReader
             // check laser lock status
 
             if (filter.FxmCounter == FxmNumber.Fxm0)
-                outlierFxm0 = outlierFxmTemp;
+                OutlierFxm0 = outlierFxmTemp;
             if (filter.FxmCounter == FxmNumber.Fxm1)
-                outlierFxm1 = outlierFxmTemp;
+                OutlierFxm1 = outlierFxmTemp;
         }
         #endregion
 
         #region Private Methods
-        /// <summary>
-        /// Parses a text line (from data file) to fill properties of the <c>RawDataPod</c>.
-        /// </summary>
-        /// <returns><c>true</c>, if line was parsed without errors, <c>false</c> otherwise.</returns>
-        /// <param name="line">The string to be parsed.</param>
+
+        private decimal? ParseDecimal(string token)
+        {
+            decimal value;
+            if (decimal.TryParse(token, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                return value;
+            return null;
+        }
+
         private bool ParseLine(string line)
         {
             // split the line into tokens
             char[] sep = { ' ', '\t' };
-            string[] token = line.Split(sep, StringSplitOptions.RemoveEmptyEntries);
-            dataColumns = token.Length;
+            string[] columns = line.Split(sep, StringSplitOptions.RemoveEmptyEntries);
+            int numberOfColumns = columns.Length;
+            decimal? value;
 
-            if (dataColumns >= 1)
-                if (!decimal.TryParse(token[0], NumberStyles.Any, CultureInfo.InvariantCulture, out logTime))
-                    return false;
-            if (dataColumns >= 2)
-                if (!decimal.TryParse(token[1], NumberStyles.Any, CultureInfo.InvariantCulture, out counter0))
-                    return false;
-            if (dataColumns >= 3)
-                if (!decimal.TryParse(token[2], NumberStyles.Any, CultureInfo.InvariantCulture, out counter1))
-                    return false;
-            if (dataColumns >= 4)
-                if (!decimal.TryParse(token[3], NumberStyles.Any, CultureInfo.InvariantCulture, out counter2))
-                    return false;
-            if (dataColumns >= 5)
-                if (!decimal.TryParse(token[4], NumberStyles.Any, CultureInfo.InvariantCulture, out counter3))
-                    return false;
-            if (dataColumns >= 6)
-                if (!decimal.TryParse(token[5], NumberStyles.Any, CultureInfo.InvariantCulture, out counter4))
-                    return false;
-            if (dataColumns >= 7)
-                if (!decimal.TryParse(token[6], NumberStyles.Any, CultureInfo.InvariantCulture, out counter5))
-                    return false;
-            if (dataColumns >= 8)
-                if (!decimal.TryParse(token[7], NumberStyles.Any, CultureInfo.InvariantCulture, out counter6))
-                    return false;
-            if (dataColumns >= 9)
-                if (!decimal.TryParse(token[8], NumberStyles.Any, CultureInfo.InvariantCulture, out counter7))
-                    return false;
-            if (dataColumns >= 10)
-                if (!decimal.TryParse(token[9], NumberStyles.Any, CultureInfo.InvariantCulture, out auxData0))
-                    return false;
-            if (dataColumns >= 11)
-                if (!decimal.TryParse(token[10], NumberStyles.Any, CultureInfo.InvariantCulture, out auxData1))
-                    return false;
+            if (numberOfColumns >= 1)
+            {
+                value = ParseDecimal(columns[0]);
+                if (!value.HasValue) return false;
+                LogTime = value.Value;
+            }
+            if (numberOfColumns >= 2)
+            {
+                value = ParseDecimal(columns[1]);
+                if (!value.HasValue) return false;
+                Counter0 = value.Value;
+            }
+            if (numberOfColumns >= 3)
+            {
+                value = ParseDecimal(columns[2]);
+                if (!value.HasValue) return false;
+                Counter1 = value.Value;
+            }
+            if (numberOfColumns >= 4)
+            {
+                value = ParseDecimal(columns[3]);
+                if (!value.HasValue) return false;
+                Counter2 = value.Value;
+            }
+            if (numberOfColumns >= 5)
+            {
+                value = ParseDecimal(columns[4]);
+                if (!value.HasValue) return false;
+                Counter3 = value.Value;
+            }
+            if (numberOfColumns >= 6)
+            {
+                value = ParseDecimal(columns[5]);
+                if (!value.HasValue) return false;
+                Counter4 = value.Value;
+            }
+            if (numberOfColumns >= 7)
+            {
+                value = ParseDecimal(columns[6]);
+                if (!value.HasValue) return false;
+                Counter5 = value.Value;
+            }
+            if (numberOfColumns >= 8)
+            {
+                value = ParseDecimal(columns[7]);
+                if (!value.HasValue) return false;
+                Counter6 = value.Value;
+            }
+            if (numberOfColumns >= 9)
+            {
+                value = ParseDecimal(columns[8]);
+                if (!value.HasValue) return false;
+                Counter7 = value.Value;
+            }
+            if (numberOfColumns >= 10)
+            {
+                value = ParseDecimal(columns[9]);
+                if (!value.HasValue) return false;
+                AuxData0 = value.Value;
+            }
+            if (numberOfColumns >= 11)
+            {
+                value = ParseDecimal(columns[10]);
+                if (!value.HasValue) return false;
+                AuxData1 = value.Value;
+            }
             return true;
         }
 
