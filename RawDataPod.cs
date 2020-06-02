@@ -162,7 +162,7 @@ namespace Bev.IO.MenloReader
 
         public override string ToString()
         {
-            return string.Format("[RawDataPod: LogTime={0}, Counter0={1}, Counter1={2}, Counter2={3}, Counter3={4}, Counter4={5}, Counter5={6}, Counter6={7}, Counter7={8}, AuxData0={9}, AuxData1={10}, ParseError={11}, OutlierFxm0={12}, OutlierFxm1={13}]", LogTime, Counter0, Counter1, Counter2, Counter3, Counter4, Counter5, Counter6, Counter7, AuxData0, AuxData1, ParseError, OutlierFxm0, OutlierFxm1);
+            return $"[RawDataPod: LogTime={LogTime} Counter0={Counter0} Counter1={Counter1} Counter2={Counter2} Counter3={Counter3} Counter4={Counter4} Counter5={Counter5} Counter6={Counter6} Counter7={Counter7} AuxData0={AuxData0} AuxData1={AuxData1} ParseError={ParseError} OutlierFxm0={OutlierFxm0} OutlierFxm1={OutlierFxm1}]";
         }
 
     }
