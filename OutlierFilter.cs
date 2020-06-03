@@ -21,7 +21,7 @@
 
         public override string ToString()
         {
-            return string.Format("[OutlierFilter: TargetRepetitionRate={0}, ToleranceRepetitionRate={1}, TargetOffSet={2}, ToleranceOffSet={3}, ToleranceCycleSlip={4}, FxmCounter={5}]", TargetRepetitionRate, ToleranceRepetitionRate, TargetOffSet, ToleranceOffSet, ToleranceCycleSlip, FxmCounter);
+            return $"[OutlierFilter: TargetRepetitionRate={TargetRepetitionRate} ToleranceRepetitionRate={ToleranceRepetitionRate} TargetOffSet={TargetOffSet} ToleranceOffSet={ToleranceOffSet} ToleranceCycleSlip={ToleranceCycleSlip} FxmCounter={FxmCounter}]";
         }
     }
 }
