@@ -150,7 +150,7 @@ namespace Bev.IO.MenloReader
             head.Add("Auxiliary channel 1 / V");
             if (rp.OutputPower != null)
                 head.Add("Optical output power / µW");
-            if (rp.Status != null)
+            if (rp.Status != LockStatus.Unknown)
                 head.Add("Lock status");
             return head.ToArray();
         }

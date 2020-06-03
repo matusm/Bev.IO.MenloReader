@@ -12,105 +12,93 @@ namespace Bev.IO.MenloReader
     public class CwBeatCalculation
     {
         #region Fields
-        CombType combType;  //
-        int modeNumber;     // mode number for frequency calculation
-        decimal signBeat;   // +1.0 or -1.0
-        decimal signOff;    // +1.0 or -1.0
-        //CclHFS? ccl;      // (optional) CCL HFS
-
-        // comb type specific parameters
-        decimal A; // multiplication factor of repetition frequency
-        decimal B; // IF for repetition frequency
-        decimal C; // harmonic factor of offset frequency
-        decimal foSet; // fixed offset setting point
+        private CombType combType;
+        private decimal A; // multiplication factor of repetition frequency
+        private decimal B; // IF for repetition frequency
+        private decimal C; // harmonic factor of offset frequency
         #endregion
 
         #region Properties
         /// <summary>
         /// Gets or sets the mode number for calculation of the absolute frequency.
         /// </summary>
-        public int ModeNumber { get { return modeNumber; } set { modeNumber = value; } }
+        public int ModeNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the beat frequency sign for calculation of the absolute frequency.
         /// </summary>
         /// <remarks>Either +1.0 or -1.0.</remarks>
-        public decimal SignBeat { get { return signBeat; } set { signBeat = value; } }
+        public decimal SignBeat { get; set; }
 
         /// <summary>
         /// Gets or sets the offset frequency sign for calculation of the absolute frequency.
         /// </summary>
         /// <remarks>Either +1.0 or -1.0.</remarks>
-        public decimal SignOff { get { return signOff; } set { signOff = value; } }
+        public decimal SignOff { get; set; }
 
         /// <summary>
         /// Gets the comb specific set point for the (fundamental) offset frequency in Hz.
         /// </summary>
         /// <remarks>Either 20 MHz or 40 MHz.</remarks>
-        public decimal OffsetSetPoint { get { return foSet; } }
+        public decimal OffsetSetPoint { get; }
 
         /// <summary>
         /// Gets a textual description of the comb type used in the calculations.
         /// </summary>
-        public string CombDescription { get { return CombString(combType); } }
+        public string CombDescription => CombString(combType);
         #endregion
 
         #region Ctor
-        /// <summary>
-        /// Instantiates a <c>CwBeatCalculation</c> object. Sets comb type specific fields.
-        /// </summary>
-        /// <param name="ct">The comb type used.</param>
-        public CwBeatCalculation(CombType ct)
+        public CwBeatCalculation(CombType combType)
         {
-            combType = ct;
-            modeNumber = 0;
-            //ccl = null;
-            signBeat = +1m;
-            signOff = +1m;
-            switch (ct)
+            this.combType = combType;
+            ModeNumber = 0;
+            SignBeat = +1m;
+            SignOff = +1m;
+            switch (combType)
             {
                 case CombType.BevFiberShg:
                     A = 4m;
                     B = 245000000m;
                     C = 2m;
-                    foSet = 20000000m;
+                    OffsetSetPoint = 20000000m;
                     break;
                 case CombType.BevFiber:
                     A = 4m;
                     B = 245000000m;
                     C = 1m;
-                    foSet = 20000000m;
+                    OffsetSetPoint = 20000000m;
                     break;
                 case CombType.BevUln:
                     A = 4m;
                     B = 245000000m;
                     C = 1m;
-                    foSet = 35000000m;
+                    OffsetSetPoint = 35000000m;
                     break;
                 case CombType.BevUlnShg:
                     A = 4m;
                     B = 245000000m;
                     C = 2m;
-                    foSet = 35000000m;
+                    OffsetSetPoint = 35000000m;
                     break;
                 case CombType.BevTiSa:
                     A = 1m;
                     B = 970000000m;
                     C = 1m;
-                    foSet = 40000000m;
+                    OffsetSetPoint = 40000000m;
                     break;
                 case CombType.CmiTiSa:
                     A = 5m;
                     B = 196000000m;
                     C = 1m;
-                    foSet = 20000000m;
+                    OffsetSetPoint = 20000000m;
                     break;
                 default:
                     // an ideal offset-free direct comb
                     A = 1m;
                     B = 0m;
                     C = 1m;
-                    foSet = 0m;
+                    OffsetSetPoint = 0m;
                     break;
             }
         }
@@ -129,8 +117,8 @@ namespace Bev.IO.MenloReader
         public int PredictModeNumber(decimal f_target, decimal f_syn, decimal f_beat)
         {
             decimal f_rep = (f_syn / A + B);
-            int mn = (int)Math.Round((f_target - signOff * C * foSet - signBeat * f_beat) / f_rep, MidpointRounding.AwayFromZero);
-            modeNumber = mn; // the respective field is set here!
+            int mn = (int)Math.Round((f_target - SignOff * C * OffsetSetPoint - SignBeat * f_beat) / f_rep, MidpointRounding.AwayFromZero);
+            ModeNumber = mn; // the respective field is set here!
             return mn;
         }
 
@@ -149,34 +137,34 @@ namespace Bev.IO.MenloReader
             List<decimal> listSignBeat = new List<decimal>();
             List<decimal> listSignOff = new List<decimal>();
 
-            signBeat = +1m; signOff = +1m;
-            mode.Add(modeNumber);
-            listSignBeat.Add(signBeat);
-            listSignOff.Add(signOff);
-            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, foSet, f_beat)));
+            SignBeat = +1m; SignOff = +1m;
+            mode.Add(ModeNumber);
+            listSignBeat.Add(SignBeat);
+            listSignOff.Add(SignOff);
+            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, OffsetSetPoint, f_beat)));
 
-            signBeat = +1m; signOff = -1m;
-            mode.Add(modeNumber);
-            listSignBeat.Add(signBeat);
-            listSignOff.Add(signOff);
-            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, foSet, f_beat)));
+            SignBeat = +1m; SignOff = -1m;
+            mode.Add(ModeNumber);
+            listSignBeat.Add(SignBeat);
+            listSignOff.Add(SignOff);
+            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, OffsetSetPoint, f_beat)));
 
-            signBeat = -1m; signOff = +1m;
-            mode.Add(modeNumber);
-            listSignBeat.Add(signBeat);
-            listSignOff.Add(signOff);
-            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, foSet, f_beat)));
+            SignBeat = -1m; SignOff = +1m;
+            mode.Add(ModeNumber);
+            listSignBeat.Add(SignBeat);
+            listSignOff.Add(SignOff);
+            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, OffsetSetPoint, f_beat)));
 
-            signBeat = -1m; signOff = -1m;
-            mode.Add(modeNumber);
-            listSignBeat.Add(signBeat);
-            listSignOff.Add(signOff);
-            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, foSet, f_beat)));
+            SignBeat = -1m; SignOff = -1m;
+            mode.Add(ModeNumber);
+            listSignBeat.Add(SignBeat);
+            listSignOff.Add(SignOff);
+            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, OffsetSetPoint, f_beat)));
 
             int idx = delta.IndexOf(delta.Min());
 
-            signBeat = listSignBeat[idx];
-            signOff = listSignOff[idx];
+            SignBeat = listSignBeat[idx];
+            SignOff = listSignOff[idx];
 
             return delta.Min();
         }
@@ -196,39 +184,39 @@ namespace Bev.IO.MenloReader
             List<decimal> listSignBeat = new List<decimal>();
             List<decimal> listSignOff = new List<decimal>();
 
-            signBeat = +1m; signOff = +1m;
+            SignBeat = +1m; SignOff = +1m;
             PredictModeNumber(f_target, f_syn, f_beat);
-            mode.Add(modeNumber);
-            listSignBeat.Add(signBeat);
-            listSignOff.Add(signOff);
-            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, foSet, f_beat)));
+            mode.Add(ModeNumber);
+            listSignBeat.Add(SignBeat);
+            listSignOff.Add(SignOff);
+            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, OffsetSetPoint, f_beat)));
 
-            signBeat = +1m; signOff = -1m;
+            SignBeat = +1m; SignOff = -1m;
             PredictModeNumber(f_target, f_syn, f_beat);
-            mode.Add(modeNumber);
-            listSignBeat.Add(signBeat);
-            listSignOff.Add(signOff);
-            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, foSet, f_beat)));
+            mode.Add(ModeNumber);
+            listSignBeat.Add(SignBeat);
+            listSignOff.Add(SignOff);
+            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, OffsetSetPoint, f_beat)));
 
-            signBeat = -1m; signOff = +1m;
+            SignBeat = -1m; SignOff = +1m;
             PredictModeNumber(f_target, f_syn, f_beat);
-            mode.Add(modeNumber);
-            listSignBeat.Add(signBeat);
-            listSignOff.Add(signOff);
-            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, foSet, f_beat)));
+            mode.Add(ModeNumber);
+            listSignBeat.Add(SignBeat);
+            listSignOff.Add(SignOff);
+            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, OffsetSetPoint, f_beat)));
 
-            signBeat = -1m; signOff = -1m;
+            SignBeat = -1m; SignOff = -1m;
             PredictModeNumber(f_target, f_syn, f_beat);
-            mode.Add(modeNumber);
-            listSignBeat.Add(signBeat);
-            listSignOff.Add(signOff);
-            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, foSet, f_beat)));
+            mode.Add(ModeNumber);
+            listSignBeat.Add(SignBeat);
+            listSignOff.Add(SignOff);
+            delta.Add(Math.Abs(f_target - AbsoluteLaserFrequency(f_syn, OffsetSetPoint, f_beat)));
 
             int idx = delta.IndexOf(delta.Min());
 
-            modeNumber = mode[idx];
-            signBeat = listSignBeat[idx];
-            signOff = listSignOff[idx];
+            ModeNumber = mode[idx];
+            SignBeat = listSignBeat[idx];
+            SignOff = listSignOff[idx];
 
             return delta.Min();
         }
@@ -256,15 +244,15 @@ namespace Bev.IO.MenloReader
                 decimal d = PredictModeAndSigns(CwCcl.Frequency(i), f_syn, f_beat);
                 delta.Add(d);
                 hfs.Add(i);
-                listSignBeat.Add(signBeat);
-                listSignOff.Add(signOff);
-                mode.Add(modeNumber);
+                listSignBeat.Add(SignBeat);
+                listSignOff.Add(SignOff);
+                mode.Add(ModeNumber);
             }
 
             int idx = delta.IndexOf(delta.Min());
-            modeNumber = mode[idx];
-            signBeat = listSignBeat[idx];
-            signOff = listSignOff[idx];
+            ModeNumber = mode[idx];
+            SignBeat = listSignBeat[idx];
+            SignOff = listSignOff[idx];
             return hfs[idx];
         }
 
@@ -279,7 +267,7 @@ namespace Bev.IO.MenloReader
         public decimal AbsoluteLaserFrequency(decimal f_syn, decimal f_off, decimal f_beat)
         {
             decimal f_rep = RepetitionFrequency(f_syn);
-            decimal x = (decimal)modeNumber * f_rep + ActualOffsetFrequency(f_off) + signBeat * f_beat;
+            decimal x = ModeNumber * f_rep + ActualOffsetFrequency(f_off) + SignBeat * f_beat;
             return x;
         }
 
@@ -300,7 +288,7 @@ namespace Bev.IO.MenloReader
         /// <param name="f_off">The frequency measured by the f-2f interferometer.</param>
         public decimal ActualOffsetFrequency(decimal f_off)
         {
-            return signOff * C * f_off;
+            return SignOff * C * f_off;
         }
 
         #endregion
@@ -310,10 +298,10 @@ namespace Bev.IO.MenloReader
         /// Provides a textual description for the comb type enum.
         /// </summary>
         /// <returns>The description.</returns>
-        /// <param name="ct">The comb type.</param>
-        private string CombString(CombType ct)
+        /// <param name="combType">The comb type.</param>
+        private string CombString(CombType combType)
         {
-            switch (ct)
+            switch (combType)
             {
                 case CombType.Generic:
                     return "Generic (ideal) comb type";
