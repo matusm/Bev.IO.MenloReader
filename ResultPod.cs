@@ -2,10 +2,6 @@
 
 namespace Bev.IO.MenloReader
 {
-    /// <summary>
-    /// A simple container class to hold a single result data sample.
-    /// </summary>
-    /// <remarks>No Ctor nor fields needed. A user friendly <c>ToString()</c> is provided.</remarks>
     public class ResultPod
     {
 
