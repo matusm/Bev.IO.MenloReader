@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -8,52 +7,20 @@ namespace Bev.IO.MenloReader
     public class CombResult
     {
         #region Fields
-        /// <summary>
-        /// The result list for output and further evaluation.
-        /// </summary>
-        List<ResultPod> resultData;
-        /// <summary>
-        /// The (filtered) measurement data.
-        /// </summary>
-        CombData cd;
-        /// <summary>
-        /// The object for the actual calculation. 
-        /// </summary>
-        CwBeatCalculation cw;
-        /// <summary>
-        /// The used FXM counter.
-        /// </summary>
-        FxmNumber fxm;
-        decimal? target;
-        decimal? fixedIF;
-        PlotType plotType = PlotType.None;
+        private CombData cd;
+        private CwBeatCalculation cw;
+        private FxmNumber fxm;
+        private decimal? target;
+        private decimal? fixedIF;
         #endregion
 
         #region Properties
-        /// <summary>
-        /// Gets the result data.
-        /// </summary>
-        /// <value>The result data.</value>
-        public List<ResultPod> ResultData { get { return resultData; } }
-
-        /// <summary>
-        /// Gets the array of column headers.
-        /// </summary>
-        /// <value>The column headers.</value>
-        public string[] ColumnHeaders { get { return GenerateColumnHeadings(); } }
-
-        /// <summary>
-        /// Gets the statistics list.
-        /// </summary>
-        /// <value>The statistics.</value>
-        public List<StatisticPod> Statistics { get { return GenerateStatistic(); } }
-
-        public decimal[] YDataForPlot { get { return GenerateYDataForPlot(); } }
-
-        public decimal[] XDataForPlot { get { return ExtractSingleColumn("LogTime"); } }
-
-        public PlotType AuxType { get { return plotType; } }
-
+        public List<ResultPod> ResultData { get; }
+        public string[] ColumnHeaders => GenerateColumnHeadings();
+        public List<StatisticPod> Statistics => GenerateStatistic();
+        public decimal[] YDataForPlot => GenerateYDataForPlot();
+        public decimal[] XDataForPlot => ExtractSingleColumn("LogTime");
+        public PlotType AuxType { get; private set; } = PlotType.None;
         #endregion
 
         #region Ctor
@@ -64,9 +31,8 @@ namespace Bev.IO.MenloReader
             this.fxm = fxm;
             this.target = target;
             this.fixedIF = fixedIF;
-            resultData = new List<ResultPod>();
+            ResultData = new List<ResultPod>();
             GenerateResults();
-            //Statistics();
         }
         #endregion
 
@@ -74,51 +40,51 @@ namespace Bev.IO.MenloReader
         /// <summary>
         /// Here the actual data evaluation takes place. The result is stored in <c>resultData</c>.
         /// </summary>
-        void GenerateResults()
+        private void GenerateResults()
         {
-            ResultPod rp;
+            ResultPod resultPod;
             decimal chn1 = 0m; // raw IF
             decimal chn2 = 0m; // raw offset
             decimal chn3 = 0m; // beat
-            foreach (var rdp in cd.MeasurementData)
+            foreach (var rawDataPod in cd.MeasurementData)
             {
-                rp = new ResultPod();
-                rp.LogTime = rdp.LogTime;
-                rp.AuxData0 = rdp.AuxData0;
-                rp.AuxData1 = rdp.AuxData1;
-                rp.OutputPower = rdp.OutputPower;
-                rp.Status = rdp.Status;
+                resultPod = new ResultPod();
+                resultPod.LogTime = rawDataPod.LogTime;
+                resultPod.AuxData0 = rawDataPod.AuxData0;
+                resultPod.AuxData1 = rawDataPod.AuxData1;
+                resultPod.OutputPower = rawDataPod.OutputPower;
+                resultPod.Status = rawDataPod.Status;
                 if (fxm == FxmNumber.Fxm0)
                 {
-                    chn1 = rdp.Counter0;
-                    chn2 = rdp.Counter1;
-                    chn3 = rdp.Counter2;
+                    chn1 = rawDataPod.Counter0;
+                    chn2 = rawDataPod.Counter1;
+                    chn3 = rawDataPod.Counter2;
                 }
                 if (fxm == FxmNumber.Fxm1)
                 {
-                    chn1 = rdp.Counter4;
-                    chn2 = rdp.Counter5;
-                    chn3 = rdp.Counter6;
+                    chn1 = rawDataPod.Counter4;
+                    chn2 = rawDataPod.Counter5;
+                    chn3 = rawDataPod.Counter6;
                 }
-                rp.RepetitionFrequency = cw.RepetitionFrequency(chn1);
-                rp.SignedOffsetFrequency = cw.ActualOffsetFrequency(chn2);
-                rp.SignedBeatFrequency = cw.SignBeat * chn3;
-                rp.LaserFrequency = cw.AbsoluteLaserFrequency(chn1, chn2, chn3);
+                resultPod.RepetitionFrequency = cw.RepetitionFrequency(chn1);
+                resultPod.SignedOffsetFrequency = cw.ActualOffsetFrequency(chn2);
+                resultPod.SignedBeatFrequency = cw.SignBeat * chn3;
+                resultPod.LaserFrequency = cw.AbsoluteLaserFrequency(chn1, chn2, chn3);
                 // set optionals to null first
-                rp.LaserFrequencyFixed = null;
-                rp.DeltaLaserFrequency = null;
-                rp.DeltaLaserFrequencyFixed = null;
+                resultPod.LaserFrequencyFixed = null;
+                resultPod.DeltaLaserFrequency = null;
+                resultPod.DeltaLaserFrequencyFixed = null;
                 // now fill optional with value, if possible
                 if (fixedIF != null)
                 {
-                    rp.LaserFrequencyFixed = cw.AbsoluteLaserFrequency((decimal)fixedIF, chn2, chn3);
+                    resultPod.LaserFrequencyFixed = cw.AbsoluteLaserFrequency((decimal)fixedIF, chn2, chn3);
                 }
                 if (target != null)
                 {
-                    rp.DeltaLaserFrequency = rp.LaserFrequency - target;
-                    if (fixedIF != null) rp.DeltaLaserFrequencyFixed = rp.LaserFrequencyFixed - target;
+                    resultPod.DeltaLaserFrequency = resultPod.LaserFrequency - target;
+                    if (fixedIF != null) resultPod.DeltaLaserFrequencyFixed = resultPod.LaserFrequencyFixed - target;
                 }
-                resultData.Add(rp);
+                ResultData.Add(resultPod);
             }
         }
 
@@ -127,39 +93,39 @@ namespace Bev.IO.MenloReader
         /// </summary>
         /// <returns>The array of headings.</returns>
         /// <remarks>The first element of the <c>resultData</c> list is analyzed.</remarks>
-        string[] GenerateColumnHeadings()
+        private string[] GenerateColumnHeadings()
         {
-            List<string> head = new List<string>();
-            if (resultData.Count == 0) return head.ToArray();
-            ResultPod rp = resultData[0];
-            head.Add("Time / s");
-            head.Add("Repetition frequency / Hz");
-            head.Add("Offset frequency / Hz");
-            head.Add("Beat frequency / Hz");
-            if (rp.DeltaLaserFrequency == null)
+            List<string> headings = new List<string>();
+            if (ResultData.Count == 0) return headings.ToArray();
+            ResultPod resultPod = ResultData[0];
+            headings.Add("Time / s");
+            headings.Add("Repetition frequency / Hz");
+            headings.Add("Offset frequency / Hz");
+            headings.Add("Beat frequency / Hz");
+            if (resultPod.DeltaLaserFrequency == null)
             {
-                head.Add("Laser frequency (using measured f_rep) / Hz");
-                if (rp.LaserFrequencyFixed != null)
-                    head.Add("Laser frequency (using set f_rep) / Hz");
+                headings.Add("Laser frequency (using measured f_rep) / Hz");
+                if (resultPod.LaserFrequencyFixed != null)
+                    headings.Add("Laser frequency (using set f_rep) / Hz");
             }
-            if (rp.DeltaLaserFrequency != null)
-                head.Add("Laser frequency (using measured f_rep) - target frequency / Hz");
-            if (rp.DeltaLaserFrequencyFixed != null)
-                head.Add("Laser frequency (using set f_rep) - target frequency / Hz");
-            head.Add("Auxiliary channel 0 / V");
-            head.Add("Auxiliary channel 1 / V");
-            if (rp.OutputPower != null)
-                head.Add("Optical output power / µW");
-            if (rp.Status != LockStatus.Unknown)
-                head.Add("Lock status");
-            return head.ToArray();
+            if (resultPod.DeltaLaserFrequency != null)
+                headings.Add("Laser frequency (using measured f_rep) - target frequency / Hz");
+            if (resultPod.DeltaLaserFrequencyFixed != null)
+                headings.Add("Laser frequency (using set f_rep) - target frequency / Hz");
+            headings.Add("Auxiliary channel 0 / V");
+            headings.Add("Auxiliary channel 1 / V");
+            if (resultPod.OutputPower != null)
+                headings.Add("Optical output power / µW");
+            if (resultPod.Status != LockStatus.Unknown)
+                headings.Add("Lock status");
+            return headings.ToArray();
         }
 
         /// <summary>
         /// Generates statistic values for each calculated and filtered quantity.
         /// </summary>
         /// <returns>The <c>List of StatisticPod</c>.</returns>
-        List<StatisticPod> GenerateStatistic()
+        private List<StatisticPod> GenerateStatistic()
         {
             string[] allProperties =
             {
@@ -173,14 +139,14 @@ namespace Bev.IO.MenloReader
                 "AuxData0",
                 "AuxData1"
             };
-            StatisticPod sPod;
-            List<StatisticPod> sPods = new List<StatisticPod>();
+            StatisticPod statisticPod;
+            List<StatisticPod> statisticsPods = new List<StatisticPod>();
             foreach (string s in allProperties)
             {
-                sPod = GenerateStatisticPod(s);
-                if (sPod != null) sPods.Add(sPod);
+                statisticPod = GenerateStatisticPod(s);
+                if (statisticPod != null) statisticsPods.Add(statisticPod);
             }
-            return sPods;
+            return statisticsPods;
         }
 
         /// <summary>
@@ -188,47 +154,47 @@ namespace Bev.IO.MenloReader
         /// </summary>
         /// <returns>The <c>StatisticPod</c>.</returns>
         /// <param name="propName">Name of property.</param>
-        StatisticPod GenerateStatisticPod(string propName)
+        private StatisticPod GenerateStatisticPod(string propName)
         {
             decimal[] singleCol = ExtractSingleColumn(propName);
             if (singleCol == null) return null;
             if (singleCol.Length <= 2) return null;
-            StatisticPod sp = new StatisticPod();
-            sp.QuantityName = propName;
-            sp.Average = singleCol.Average();
-            sp.StdDev = (decimal)singleCol.StandardDeviation();
-            sp.Max = singleCol.Max();
-            sp.Min = singleCol.Min();
-            return sp;
+            StatisticPod statisticPod = new StatisticPod();
+            statisticPod.QuantityName = propName;
+            statisticPod.Average = singleCol.Average();
+            statisticPod.StdDev = (decimal)singleCol.StandardDeviation();
+            statisticPod.Max = singleCol.Max();
+            statisticPod.Min = singleCol.Min();
+            return statisticPod;
         }
 
         /// <summary>
         /// Generates an array of the ordinates for a plot file.
         /// </summary>
         /// <returns>An array of the y-values.</returns>
-        decimal[] GenerateYDataForPlot()
+        private decimal[] GenerateYDataForPlot()
         {
             decimal[] singleCol;
             singleCol = ExtractSingleColumn("DeltaLaserFrequencyFixed");
             if (singleCol != null)
             {
-                plotType = PlotType.DeltaLaserFrequencyFixed;
+                AuxType = PlotType.DeltaLaserFrequencyFixed;
                 return singleCol;
             }
             singleCol = ExtractSingleColumn("DeltaLaserFrequency");
             if (singleCol != null)
             {
-                plotType = PlotType.DeltaLaserFrequency;
+                AuxType = PlotType.DeltaLaserFrequency;
                 return singleCol;
             }
             singleCol = ExtractSingleColumn("LaserFrequencyFixed");
             if (singleCol != null)
             {
-                plotType = PlotType.LaserFrequencyFixed;
+                AuxType = PlotType.LaserFrequencyFixed;
                 return singleCol;
             }
             singleCol = ExtractSingleColumn("LaserFrequency");
-            plotType = PlotType.LaserFrequency;
+            AuxType = PlotType.LaserFrequency;
             return singleCol;
         }
 
@@ -237,15 +203,15 @@ namespace Bev.IO.MenloReader
         /// </summary>
         /// <param name="propName">The name of a property exported by <c>CombResult</c>. </param>
         /// <returns>A single column.</returns>
-        decimal[] ExtractSingleColumn(string propName)
+        private decimal[] ExtractSingleColumn(string propName)
         {
             // check if resultData exists
-            if (resultData == null) return null;
-            if (resultData.Count == 0) return null;
+            if (ResultData == null) return null;
+            if (ResultData.Count == 0) return null;
             PropertyInfo prop;
             // now generate the extracted list and return
             List<decimal> col = new List<decimal>();
-            foreach (var rdp in resultData)
+            foreach (var rdp in ResultData)
             {
                 prop = rdp.GetType().GetProperty(propName);
                 if (prop == null) return null;
@@ -260,7 +226,11 @@ namespace Bev.IO.MenloReader
 
     public enum PlotType
     {
-        None, DeltaLaserFrequencyFixed, DeltaLaserFrequency, LaserFrequencyFixed, LaserFrequency
+        None,
+        DeltaLaserFrequencyFixed,
+        DeltaLaserFrequency,
+        LaserFrequencyFixed,
+        LaserFrequency
     }
 
 }
