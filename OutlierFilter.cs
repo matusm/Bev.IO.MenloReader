@@ -2,34 +2,20 @@
 {
     public class OutlierFilter
     {
-        #region Fields
-        #endregion
-
         #region Properties
-        public decimal? TargetRepetitionRate { get; set; }
-        public decimal? ToleranceRepetitionRate { get; set; }
-        public decimal? TargetOffSet { get; set; }
-        public decimal? ToleranceOffSet { get; set; }
-        public decimal? ToleranceCycleSlip { get; set; }
-        public decimal? LockStatusSetpoint { get; set; }
+        public decimal? TargetRepetitionRate { get; set; } = null;
+        public decimal? ToleranceRepetitionRate { get; set; } = null;
+        public decimal? TargetOffSet { get; set; } = null;
+        public decimal? ToleranceOffSet { get; set; } = null;
+        public decimal? ToleranceCycleSlip { get; set; } = null;
+        public decimal? LockStatusSetpoint { get; set; } = null;
         public FxmNumber FxmCounter { get; }
         #endregion
 
         #region Ctor
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:Bev.Menlo.Utils.OutlierFilter"/> class.
-        /// A filter is specified for a specific FXM counter.
-        /// </summary>
-        /// <param name="fxmNumber">The FXM counter.</param>
         public OutlierFilter(FxmNumber fxmNumber)
         {
             FxmCounter = fxmNumber;
-            TargetRepetitionRate = null;
-            ToleranceRepetitionRate = null;
-            TargetOffSet = null;
-            ToleranceOffSet = null;
-            ToleranceCycleSlip = null;
-            LockStatusSetpoint = null;
         }
         #endregion
 
