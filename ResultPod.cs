@@ -21,44 +21,39 @@ namespace Bev.IO.MenloReader
         public decimal LaserFrequency { get; set; }
         public decimal? LaserFrequencyFixed { get; set; }
         public decimal? OutputPower { get; set; }
-        public LockStatus? Status { get; set; }
+        public LockStatus Status { get; set; } = LockStatus.Unknown;
         #endregion
 
-        /// <summary>
-        /// Returns a nicely formatted string presenting all values not beeing <c>null</c>.
-        /// </summary>
-        /// <returns>The string returned by <c>ToString()</c>.</returns>
-        string TextLine()
+        private string ToTextLine()
         {
             //TODO language specific formatting!
-            StringBuilder fullLine = new StringBuilder();
-            fullLine.AppendFormat("{0,11:F3}", LogTime);
-            fullLine.AppendFormat("{0,17:F5}", RepetitionFrequency);
-            fullLine.AppendFormat("{0,15:+0.000;-0.000}", SignedOffsetFrequency);
-            fullLine.AppendFormat("{0,15:+0.000;-0.000}", SignedBeatFrequency);
+            StringBuilder textLine = new StringBuilder();
+            textLine.Append($"{LogTime,11:F3}");
+            textLine.Append($"{RepetitionFrequency,17:F5}");
+            textLine.Append($"{SignedOffsetFrequency,15:+0.000;-0.000}");
+            textLine.Append($"{SignedBeatFrequency,15:+0.000;-0.000}");
             // fullLine.AppendFormat("{0,20:F3}", LaserFrequency); // for dignostics only
             // output laser frequency only if deviation from target does not exist
             if (DeltaLaserFrequency == null)
             {
-                fullLine.AppendFormat("{0,21:F3}", LaserFrequency);
+                textLine.Append($"{LaserFrequency,21:F3}");
                 if (LaserFrequencyFixed != null)
-                    fullLine.AppendFormat("{0,22:F3}", LaserFrequencyFixed);
+                    textLine.Append($"{LaserFrequencyFixed,22:F3}");
             }
             // if (LaserFrequencyFixed!=null) fullLine.AppendFormat("{0,21:F3}", LaserFrequencyFixed); // for dignostics only
             if (DeltaLaserFrequency != null)
-                fullLine.AppendFormat("{0,20:F3}", DeltaLaserFrequency);
+                textLine.Append($"{DeltaLaserFrequency,20:F3}");
             if (DeltaLaserFrequencyFixed != null)
-                fullLine.AppendFormat("{0,20:F3}", DeltaLaserFrequencyFixed);
-            fullLine.AppendFormat("{0,9:F4}", AuxData0);
-            fullLine.AppendFormat("{0,9:F4}", AuxData1);
+                textLine.Append($"{DeltaLaserFrequencyFixed,20:F3}");
+            textLine.Append($"{AuxData0,9:F4}");
+            textLine.Append($"{AuxData1,9:F4}");
             if (OutputPower != null)
-                fullLine.AppendFormat("{0,8:F1}", OutputPower);
-            if (Status != null)
-                fullLine.AppendFormat(" {0}", Status);
-            return fullLine.ToString();
+                textLine.Append($"{OutputPower,8:F1}");
+            textLine.Append($" {Status}");
+            return textLine.ToString();
         }
 
-        public override string ToString() { return TextLine(); }
+        public override string ToString() { return ToTextLine(); }
 
     }
 }

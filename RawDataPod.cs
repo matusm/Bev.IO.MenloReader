@@ -45,11 +45,11 @@ namespace Bev.IO.MenloReader
                 Status = LockStatus.Locked;
         }
 
-        public void SetOutputPower(double d, double k)
+        public void SetOutputPower(double intercept, double slope)
         {
             OutputPower = null;
             if (noAuxData) return;
-            OutputPower = (decimal)d + (decimal)k * AuxData1;
+            OutputPower = (decimal)intercept + (decimal)slope * AuxData1;
         }
 
         public void MarkOutlier(OutlierFilter filter)
