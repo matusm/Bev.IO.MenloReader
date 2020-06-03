@@ -5,6 +5,8 @@ namespace Bev.IO.MenloReader
 {
     public class RawDataPod
     {
+        private bool noAuxData = true;
+
         #region Properties
         // probably just a getter would be better
         public decimal LogTime { get; set; }
@@ -19,27 +21,37 @@ namespace Bev.IO.MenloReader
         public decimal AuxData0 { get; set; }
         public decimal AuxData1 { get; set; }
         public bool ParseError { get; }
-        public OutlierType OutlierFxm0 { get; private set; }
-        public OutlierType OutlierFxm1 { get; private set; }
-        public decimal? OutputPower { get; set; }
-        public LockStatus? Status { get; set; }
+        public OutlierType OutlierFxm0 { get; private set; } = OutlierType.None;
+        public OutlierType OutlierFxm1 { get; private set; } = OutlierType.None;
+        public decimal? OutputPower { get; set; } = null;
+        public LockStatus Status { get; set; } = LockStatus.Unknown;
         #endregion
 
         #region Ctor
         public RawDataPod(string str)
         {
-            ParseError = false;
-            OutlierFxm0 = OutlierType.None;
-            OutlierFxm1 = OutlierType.None;
             ParseError = !ParseLine(str);
         }
         #endregion
 
         #region Public Methods
-        /// <summary>
-        /// Marks a <c>RawDataPod</c> object as an outlier according to criterions set in the filter.
-        /// </summary>
-        /// <param name="filter">The filter.</param>
+        public void SetLockStatus(double threshold) 
+        {
+            Status = LockStatus.Unknown;
+            if (noAuxData) return;
+            if ((double)AuxData0 < threshold)
+                Status = LockStatus.Unlocked;
+            else
+                Status = LockStatus.Locked;
+        }
+
+        public void SetOutputPower(double d, double k)
+        {
+            OutputPower = null;
+            if (noAuxData) return;
+            OutputPower = (decimal)d + (decimal)k * AuxData1;
+        }
+
         public void MarkOutlier(OutlierFilter filter)
         {
             FxmNumber fxm = filter.FxmCounter;
@@ -161,12 +173,14 @@ namespace Bev.IO.MenloReader
                 value = ParseDecimal(columns[9]);
                 if (!value.HasValue) return false;
                 AuxData0 = value.Value;
+                noAuxData = false;
             }
             if (numberOfColumns >= 11)
             {
                 value = ParseDecimal(columns[10]);
                 if (!value.HasValue) return false;
                 AuxData1 = value.Value;
+                noAuxData = false;
             }
             return true;
         }
