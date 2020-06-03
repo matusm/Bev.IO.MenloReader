@@ -1,28 +1,18 @@
 ﻿namespace Bev.IO.MenloReader
 {
-    /// <summary>
-    /// Container class for filter parameters of recorded frequencies. Per FXM counter.
-    /// </summary>
     public class OutlierFilter
     {
         #region Fields
-        decimal? targetRepetitionRate;
-        decimal? toleranceRepetitionRate;
-        decimal? targetOffSet;
-        decimal? toleranceOffSet;
-        decimal? toleranceCycleSlip;
-        decimal? lockStatusSetpoint;
-        FxmNumber fxm;
         #endregion
 
         #region Properties
-        public decimal? TargetRepetitionRate { get { return targetRepetitionRate; } set { targetRepetitionRate = value; } }
-        public decimal? ToleranceRepetitionRate { get { return toleranceRepetitionRate; } set { toleranceRepetitionRate = value; } }
-        public decimal? TargetOffSet { get { return targetOffSet; } set { targetOffSet = value; } }
-        public decimal? ToleranceOffSet { get { return toleranceOffSet; } set { toleranceOffSet = value; } }
-        public decimal? ToleranceCycleSlip { get { return toleranceCycleSlip; } set { toleranceCycleSlip = value; } }
-        public decimal? LockStatusSetpoint { get { return lockStatusSetpoint; } set { lockStatusSetpoint = value; } }
-        public FxmNumber FxmCounter { get { return fxm; } }
+        public decimal? TargetRepetitionRate { get; set; }
+        public decimal? ToleranceRepetitionRate { get; set; }
+        public decimal? TargetOffSet { get; set; }
+        public decimal? ToleranceOffSet { get; set; }
+        public decimal? ToleranceCycleSlip { get; set; }
+        public decimal? LockStatusSetpoint { get; set; }
+        public FxmNumber FxmCounter { get; }
         #endregion
 
         #region Ctor
@@ -33,13 +23,13 @@
         /// <param name="fxmNumber">The FXM counter.</param>
         public OutlierFilter(FxmNumber fxmNumber)
         {
-            fxm = fxmNumber;
-            targetRepetitionRate = null;
-            toleranceRepetitionRate = null;
-            targetOffSet = null;
-            toleranceOffSet = null;
-            toleranceCycleSlip = null;
-            lockStatusSetpoint = null;
+            FxmCounter = fxmNumber;
+            TargetRepetitionRate = null;
+            ToleranceRepetitionRate = null;
+            TargetOffSet = null;
+            ToleranceOffSet = null;
+            ToleranceCycleSlip = null;
+            LockStatusSetpoint = null;
         }
         #endregion
 
