@@ -14,7 +14,7 @@
 
         public override string ToString()
         {
-            return string.Format("{0,11:F3} {1,23:F3}", LogTime, Frequency);
+            return $"{LogTime,11:F3} {Frequency,23:F3}";
         }
     }
 }

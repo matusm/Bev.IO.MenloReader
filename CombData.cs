@@ -53,8 +53,8 @@ namespace Bev.IO.MenloReader
         public decimal Counter7mean { get; private set; }
 
         public decimal? VoltageToPowerSlope { get; set; } = null;
-        public decimal? VoltageToPowerFixed { get; set; } = null;
-        public decimal? LockingSetPoint { get; set; } = null;
+        public decimal? VoltageToPowerIntercept { get; set; } = null;
+        public decimal? LockingThreshold { get; set; } = null;
         #endregion
 
         public CombData()
@@ -71,7 +71,7 @@ namespace Bev.IO.MenloReader
         /// <param name="datFileName">Fully qualified filename.</param>
         public bool LoadFile(string datFileName)
         {
-            RawDataPod tempRDP;
+            RawDataPod tempRawDataPod;
             if (!File.Exists(datFileName))
                 return false;
             ClearData(); // clear only if file exist
@@ -90,10 +90,10 @@ namespace Bev.IO.MenloReader
                     }
                     else
                     {
-                        tempRDP = new RawDataPod(datLine);
-                        tempRDP.OutputPower = CalculateLaserOutputPower(tempRDP.AuxData0);
-                        tempRDP.Status = CheckLockStatus(tempRDP.AuxData1);
-                        MeasurementData.Add(tempRDP);
+                        tempRawDataPod = new RawDataPod(datLine);
+                        tempRawDataPod.OutputPower = CalculateLaserOutputPower(tempRawDataPod.AuxData0);
+                        tempRawDataPod.Status = CheckLockStatus(tempRawDataPod.AuxData1);
+                        MeasurementData.Add(tempRawDataPod);
                     }
                 }
             hDatFile.Close();
@@ -117,8 +117,8 @@ namespace Bev.IO.MenloReader
         public void SetCoefficients(decimal? k, decimal? d, decimal? s)
         {
             VoltageToPowerSlope = k;
-            VoltageToPowerFixed = d;
-            LockingSetPoint = s;
+            VoltageToPowerIntercept = d;
+            LockingThreshold = s;
         }
         public void SetCoefficients(decimal? k, decimal? d) { SetCoefficients(k, d, null); }
         public void SetCoefficients(decimal? s) { SetCoefficients(null, null, s); }
@@ -260,11 +260,11 @@ namespace Bev.IO.MenloReader
         /// <remarks>The tranformation is realized as a linear function.</remarks>
         /// <param name="voltage">The measured DC-voltage in V.</param>
         /// <returns></returns>
-        decimal? CalculateLaserOutputPower(decimal voltage)
+        private decimal? CalculateLaserOutputPower(decimal voltage)
         {
-            if (VoltageToPowerFixed == null) return null;
+            if (VoltageToPowerIntercept == null) return null;
             if (VoltageToPowerSlope == null) return null;
-            decimal? power = VoltageToPowerSlope * voltage + VoltageToPowerFixed;
+            decimal? power = VoltageToPowerSlope * voltage + VoltageToPowerIntercept;
             if (power < 0) power = 0; // a power can not be negative!
             return power;
         }
@@ -274,10 +274,10 @@ namespace Bev.IO.MenloReader
         /// </summary>
         /// <param name="voltage">The lock status output voltage in V.</param>
         /// <returns></returns>
-        LockStatus CheckLockStatus(decimal voltage)
+        private LockStatus CheckLockStatus(decimal voltage)
         {
-            if (LockingSetPoint == null) return LockStatus.Unknown;
-            if (voltage > LockingSetPoint) return LockStatus.Locked;
+            if (LockingThreshold == null) return LockStatus.Unknown;
+            if (voltage > LockingThreshold) return LockStatus.Locked;
             return LockStatus.Unlocked;
         }
 
