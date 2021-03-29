@@ -4,8 +4,6 @@ VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bev.IO.MenloReader", "Bev.IO.MenloReader.csproj", "{22DB21BB-8673-43E5-A418-F4EFDE584BCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombInator", "..\CombInator\CombInator.csproj", "{3EE8143B-F354-45B5-A0F0-DDFB4CB39214}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -16,10 +14,6 @@ Global
 		{22DB21BB-8673-43E5-A418-F4EFDE584BCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22DB21BB-8673-43E5-A418-F4EFDE584BCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22DB21BB-8673-43E5-A418-F4EFDE584BCA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3EE8143B-F354-45B5-A0F0-DDFB4CB39214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3EE8143B-F354-45B5-A0F0-DDFB4CB39214}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3EE8143B-F354-45B5-A0F0-DDFB4CB39214}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3EE8143B-F354-45B5-A0F0-DDFB4CB39214}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
